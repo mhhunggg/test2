@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iframe with Button</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <button id="sendMessageButton">Count</button>
+  <p id="numberValue">Number: 0</p>
+  <!-- <div id="app"></div> -->
+  <br>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link">Go</a>
+
+
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+  <script>
+    console.log("window.CrazyGames", window.CrazyGames);
+    let number = 0;
+    window.addEventListener("message", listenMessage);
+    const label = document.getElementById("numberValue");
+    const validOrigin = ["https://web.telegram.org"];
+    const validParent = ["https://vefam.com", "http://localhost:8849"];
+    let isValid = false;
+    // gộp 2 cái này lại để checks
+
+    function listenMessage(e) {
+      isValid = false;
+      if (!validParent.includes(e.origin)) return;
+      if (!e.data.event || typeof e.data.event !== "string") return;
+      if (!e.data.value || typeof e.data.value !== "number") return;
+      if (e.data.event === "messageFromVue") {
+        console.log("Message from parent:", e);
+        label.innerHTML = `Number: ${e.data.value}`
+      }
+    }
+
+    document.getElementById("sendMessageButton").addEventListener("click", () => {
+      number += 1;
+      const message = {
+        event: "messageFromHtml",
+        value: number,
+      };
+      window.parent.postMessage(message, "https://vefam.com/app-dev/telegram-app/#/home");
+      window.parent.postMessage(message, "http://localhost:8849/app-dev/telegram-app/#/home");
+      window.dispatchEvent(new CustomEvent("sendNumber", { value: number }));
+    });
+
+    function testSdk() {
+      // await example
+      try {
+        const user = window.CrazyGames.SDK.user.getUser();
+        console.log(user);
+      } catch (e) {
+        console.log("Get user error: ", e);
+      }
+
+      // .then .catch example
+      window.CrazyGames.SDK.user
+        .getUser()
+        .then((user) => console.log(user))
+        .catch((e) => console.log("Get user error: ", e));
+    }
+    testSdk();
+  </script>
+</body>
+
+</html>
